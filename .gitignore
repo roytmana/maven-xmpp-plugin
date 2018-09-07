@@ -1,0 +1,15 @@
+src/test/xmpp-plugin-config.properties
+**/target/
+.idea/
+*.iml
+*.log
+datasources.json
+tables.xml
+tables2.xml
+Selectors.txt
+/src/main/webapp/ext/
+/data/
+temp.json
+test.html
+**/screenshots/
+*.mpp

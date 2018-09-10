@@ -60,8 +60,7 @@
              domain=alterasoft.net
              userName=gitlab
              recipients=roytmana@alterasoft.net;roytmana@gmail.com
-             message=${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\nCommit
-             ${git.commit.id.abbrev} by ${git.commit.user.email}: "${git.commit.message.short}"
+             message=${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\nCommit ${git.commit.id.abbrev} by ${git.commit.user.email}: "${git.commit.message.short}"
              password=${password}
            </configText>
            <mailConfigText>

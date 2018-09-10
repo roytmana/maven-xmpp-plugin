@@ -56,7 +56,7 @@ public class XmppSendMojo extends AbstractMojo {
   @Parameter(property = "recipients")
   private List<String> recipients = new ArrayList<>();
 
-  @Parameter(property = "message", defaultValue = "${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed")
+  @Parameter(property = "message", defaultValue = "${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\\nCommit ${git.commit.id.abbrev} by ${git.commit.user.email}: \"${git.commit.message.short}\"")
   private String message;
 
   @Parameter(property = "mailConfig")

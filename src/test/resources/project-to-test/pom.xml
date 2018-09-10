@@ -10,6 +10,9 @@
   <packaging>jar</packaging>
   <name>Test MyMojo</name>
 
+  <properties>
+  </properties>
+
   <build>
     <plugins>
       <plugin>
@@ -51,15 +54,29 @@
         <artifactId>maven-xmpp-plugin</artifactId>
         <version>1.0-SNAPSHOT</version>
         <configuration>
-          <configText>
-            host=talk.google.com
-            port=5222
-            domain=alterasoft.net
-            userName=gitlab
-            recipients=roytmana@alterasoft.net;roytmana@gmail.com
-            message=${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\nCommit
-            ${git.commit.id.abbrev} by ${git.build.user.email}: "${git.commit.message.short}"
-          </configText>
+          <!-- <configText>
+             host=talk.google.com
+             port=5222
+             domain=alterasoft.net
+             userName=gitlab
+             recipients=roytmana@alterasoft.net;roytmana@gmail.com
+             message=${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\nCommit
+             ${git.commit.id.abbrev} by ${git.commit.user.email}: "${git.commit.message.short}"
+             password=${password}
+           </configText>
+           <mailConfigText>
+             mail.transport.protocol=smtps
+             mail.smtp.auth=true
+             mail.smtp.host=smtp.gmail.com
+             mail.smtp.port=587
+             mail.smtp.starttls.enable=true
+             mail.smtp.user=gitlab@alterasoft.net
+             mail.smtp.connectiontimeout=30000
+             mail.smtp.timeout=15000
+             mail.smtp.writetimeout=15000
+             recipients=roytmana@alterasoft.net;roytmana@gmail.com;roytmana@gao.gov
+             password=${password}
+           </mailConfigText>-->
           <configFile>C:\projects\peacetech\maven-xmpp-plugin\src\test\xmpp-plugin-config.properties</configFile>
           <!--
                     <host>talk.google.com</host>
@@ -86,4 +103,36 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>test</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <xmpp-plugin.configText>
+          host=talk.google.com
+          port=5222
+          domain=alterasoft.net
+          userName=gitlab
+          recipients=roytmana@alterasoft.net
+          message=${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\nCommit
+          ${git.commit.id.abbrev} by ${git.build.user.email}: "${git.commit.message.short}"
+        </xmpp-plugin.configText>
+
+        <xmpp-plugin.mailConfigText>
+          mail.transport.protocol=smtps
+          mail.smtp.auth=true
+          mail.smtp.host=smtp.gmail.com
+          mail.smtp.port=587
+          mail.smtp.starttls.enable=true
+          mail.smtp.user=gitlab@alterasoft.net
+          mail.smtp.connectiontimeout=30000
+          mail.smtp.timeout=15000
+          mail.smtp.writetimeout=15000
+          recipients=roytmana@alterasoft.net;roytmana@gmail.com;roytmana@gao.gov
+        </xmpp-plugin.mailConfigText>
+      </properties>
+    </profile>
+  </profiles>
 </project>

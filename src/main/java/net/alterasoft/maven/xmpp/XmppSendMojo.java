@@ -26,6 +26,7 @@ import java.util.*;
 
 @Mojo(name = "send", defaultPhase = LifecyclePhase.DEPLOY)
 public class XmppSendMojo extends AbstractMojo {
+
   @Parameter(defaultValue = "${project}", readonly = true)
   private MavenProject project;
 
@@ -56,7 +57,7 @@ public class XmppSendMojo extends AbstractMojo {
   @Parameter(property = "recipients")
   private List<String> recipients = new ArrayList<>();
 
-  @Parameter(property = "message", defaultValue = "${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed\\nCommit ${git.commit.id.abbrev} by ${git.commit.user.email}: \"${git.commit.message.short}\"")
+  @Parameter(property = "message", defaultValue = "${project.groupId}::${project.artifactId}-${project.version} ${project.build.finalName} has been deployed \nCommit ${git.commit.id.abbrev} by ${git.commit.user.email}: \"${git.commit.message.short}\"")
   private String message;
 
   @Parameter(property = "mailConfig")
@@ -67,6 +68,9 @@ public class XmppSendMojo extends AbstractMojo {
 
   @Parameter(property = "mailEnabled")
   private Boolean mailEnabled;
+
+  @Parameter(property = "xmppEnabled")
+  private Boolean xmppEnabled;
 
   @Override public void execute() throws MojoExecutionException {
     Properties properties = new Properties();
@@ -127,48 +131,50 @@ public class XmppSendMojo extends AbstractMojo {
       }
     }
 
-    XMPPTCPConnectionConfiguration xmppConfig = null;
-    try {
-      xmppConfig = XMPPTCPConnectionConfiguration.builder()
-          .setUsernameAndPassword(userName, password)
-          .setXmppDomain(domain)
-          .setHost(host)
-          .setPort(port)
-//          .setDebuggerEnabled(true)
-          .setHostnameVerifier(new HostnameVerifier() {
-            @Override public boolean verify(String s, SSLSession sslSession) {
-              return true;
-            }
-          })
-//          .setSendPresence(true)
-          .build();
-    } catch (Exception e) {
-      throw new MojoExecutionException("Invalid XMPP configuration", e);
-    }
+    if (!Boolean.FALSE.equals(xmppEnabled)) {
+      XMPPTCPConnectionConfiguration xmppConfig = null;
+      try {
+        xmppConfig = XMPPTCPConnectionConfiguration.builder()
+            .setUsernameAndPassword(userName, password)
+            .setXmppDomain(domain)
+            .setHost(host)
+            .setPort(port)
+            //          .setDebuggerEnabled(true)
+            .setHostnameVerifier(new HostnameVerifier() {
+              @Override public boolean verify(String s, SSLSession sslSession) {
+                return true;
+              }
+            })
+            //          .setSendPresence(true)
+            .build();
+      } catch (Exception e) {
+        throw new MojoExecutionException("Invalid XMPP configuration", e);
+      }
 
-    AbstractXMPPConnection conn = new XMPPTCPConnection(xmppConfig);
-    try {
-      final String connectTo = host + ":" + port;
-      getLog().info("Attempting to connect to " + connectTo);
-      final AbstractXMPPConnection connect = conn.connect();
-      getLog().info("Successfully connected to " + connectTo);
-      connect.login();
-      getLog().info("Successfully authenticated " + connectTo);
-//      conn.sendStanza(new Presence(Presence.Type.available));
-      if (recipients != null && !recipients.isEmpty()) {
-        ChatManager chatManager = ChatManager.getInstanceFor(conn);
-        for (String recipient: recipients) {
-          sendMessage(chatManager, recipient);
+      AbstractXMPPConnection conn = new XMPPTCPConnection(xmppConfig);
+      try {
+        final String connectTo = host + ":" + port;
+        getLog().info("Attempting to connect to " + connectTo);
+        final AbstractXMPPConnection connect = conn.connect();
+        getLog().info("Successfully connected to " + connectTo);
+        connect.login();
+        getLog().info("Successfully authenticated " + connectTo);
+        //      conn.sendStanza(new Presence(Presence.Type.available));
+        if (recipients != null && !recipients.isEmpty()) {
+          ChatManager chatManager = ChatManager.getInstanceFor(conn);
+          for (String recipient: recipients) {
+            sendMessage(chatManager, recipient);
+          }
         }
+        //      conn.sendStanza(new Presence(Presence.Type.unavailable));
+      } catch (Throwable e) {
+        getLog().error("Error sending XMPP message", e);
+        if (failOnError) {
+          throw new MojoExecutionException("Error sending XMPP message", e);
+        }
+      } finally {
+        conn.disconnect();
       }
-//      conn.sendStanza(new Presence(Presence.Type.unavailable));
-    } catch (Throwable e) {
-      getLog().error("Error sending XMPP message", e);
-      if (failOnError) {
-        throw new MojoExecutionException("Error sending XMPP message", e);
-      }
-    } finally {
-      conn.disconnect();
     }
 
     if (Boolean.TRUE.equals(mailEnabled) || mailEnabled == null && mailConfig.getProperty("mail.smtp.host") != null) {
